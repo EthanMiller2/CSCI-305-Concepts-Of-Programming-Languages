@@ -1,0 +1,66 @@
+import 'dart:html';
+import 'dart:async';
+import 'dart:math' as Math;
+
+class Ball {
+  num x = 50; //start x
+  num y = 50; //start y
+  num r = 15; //ball size (radius)
+  num vx = 0; //velocity
+  num vy = 0; //velocity
+}
+
+CanvasElement canvas;
+CanvasRenderingContext2D ctx;
+
+void main() {
+  canvas = querySelector('#canvas');
+  ctx = canvas.getContext('2d');
+
+  Ball ball = new Ball();
+
+  void onMouseClick(MouseEvent e){
+    ball.x = e.offset.x;
+    ball.y = e.offset.y;
+  }
+  ctx.canvas.onClick.listen(onMouseClick);
+
+  Timer.periodic(new Duration(milliseconds: 10), (timer) {
+// Clear display
+    ctx.save();
+    ctx.fillStyle = "blue";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+// Update ball (with Physics! =)
+
+// 1 - apply velocity to position (vx -> x)
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+// 2 - apply drag/friction to velocity
+    ball.vx *= .99;
+    ball.vy *= .99;
+// 3 - apply gravity to velocity
+    ball.vy += .25;
+    ball.vx += .25;
+// 4 - check for collisions
+    if (ball.y + ball.r > canvas.height) {
+      ball.y = canvas.height - ball.r;
+      ball.vy = -(ball.vy).abs();
+    }
+    if (ball.x + ball.r > canvas.width) {
+      ball.x = canvas.width - ball.r;
+      ball.vx = -(ball.vx).abs();
+    }
+// Draw ball
+    ctx.save();
+    ctx.translate(ball.x, ball.y);
+    ctx.fillStyle = "#ffff00";
+    ctx.beginPath();
+    ctx.arc(0, 0, ball.r, 0, Math.pi * 2, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+}
